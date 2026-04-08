@@ -1,0 +1,9 @@
+{
+  "name": "my-project",
+  "mode": "vendored",
+  "dependencies": {
+    "nicholasjackson/opa-rego-language": {
+      "version": "1.15.3"
+    }
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "tessl": {
+      "command": "tessl",
+      "args": ["mcp","start"],
+      "disabled": false
+    },
+    "terraform": {
+      "command": "terraform-mcp-server",
+      "disabled": false
+    }
+  }
+}

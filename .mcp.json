@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "tessl": {
+      "type": "stdio",
+      "command": "tessl",
+      "args": [
+        "mcp",
+        "start"
+      ]
+    },
+    "terraform": {
+        "type": "stdio",
+        "command": "terraform-mcp-server"
+    }
+  }
+}
