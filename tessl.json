@@ -5,5 +5,8 @@
     "nicholasjackson/opa-rego-language": {
       "version": "1.17.0"
     }
-  }
+  },
+  "agents": [
+    "claude-code"
+  ]
 }

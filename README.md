@@ -30,7 +30,7 @@ tessl install
 The Terraform MCP server provides Terraform context to the AI agent via the Model Context Protocol. Install the CLI binary:
 
 ```bash
-go install github.com/hashicorp/terraform-mcp-server@latest
+go install github.com/hashicorp/terraform-mcp-server/cmd/terraform-mcp-server@latest
 ```
 
 Or download a pre-built binary from the [releases page](https://github.com/hashicorp/terraform-mcp-server/releases) and place it on your `PATH`.
