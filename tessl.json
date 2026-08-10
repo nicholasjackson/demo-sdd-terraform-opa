@@ -3,7 +3,7 @@
   "mode": "vendored",
   "dependencies": {
     "nicholasjackson/opa-rego-language": {
-      "version": "1.15.3"
+      "version": "1.17.0"
     }
   }
 }

@@ -1,5 +1,44 @@
 # Creating Rego Policy for Terraform using with Spec Driven Development
 
+## Prerequisites
+
+### Installing Bob
+
+Bob is the AI coding assistant used to run the plan and implementation prompts.
+
+```bash
+npm install -g @bob-ai/cli
+```
+
+### Installing Tessl
+
+Tessl manages skills and plugins used by Bob in this project.
+
+```bash
+npm install -g tessl
+```
+
+After installing, authenticate and install the project's plugins:
+
+```bash
+tessl login
+tessl install
+```
+
+### Installing the Terraform MCP Server (CLI version)
+
+The Terraform MCP server provides Terraform context to the AI agent via the Model Context Protocol. Install the CLI binary:
+
+```bash
+go install github.com/hashicorp/terraform-mcp-server@latest
+```
+
+Or download a pre-built binary from the [releases page](https://github.com/hashicorp/terraform-mcp-server/releases) and place it on your `PATH`.
+
+Once installed, the server is wired up automatically via [`.mcp.json`](.mcp.json) and will be started by Bob when needed — no manual configuration is required.
+
+---
+
 ## Prompt Plan Mode
 
 ```markdown
@@ -78,7 +117,8 @@ tessl install file:///home/nicj/code/github.com/tesslio/demo-opa-tile-public
  claude -p "$(cat implement.md)" --dangerously-skip-permissions --verbose --output-format stream-json > implement.log
 ```
 
+### Bob
 ```bash
 bob -p "$(cat plan.md)" --yolo -o stream-json > plan.log
 bob -p "$(cat implement.md)" --yolo -o stream-json > implement.log
- ```
+```
