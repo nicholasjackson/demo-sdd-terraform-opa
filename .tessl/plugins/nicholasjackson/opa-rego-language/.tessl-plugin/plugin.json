@@ -1,0 +1,11 @@
+{
+  "name": "nicholasjackson/opa-rego-language",
+  "version": "1.19.0",
+  "description": "Rego is the declarative policy language used by Open Policy Agent (OPA). This tile covers writing and testing Rego policies for Kubernetes admission control, Terraform and infrastructure-as-code plan validation, Docker container authorization, HTTP API authorization, RBAC and role-based access control, data filtering, metadata annotations with opa inspect, and OPA policy testing with opa test.",
+  "rules": [
+    "rules.md"
+  ],
+  "skills": [
+    "skills/rego-domain-reference"
+  ]
+}
