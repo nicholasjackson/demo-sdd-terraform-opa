@@ -83,11 +83,6 @@ resource "docker_container" "vault" {
 
   read_only = true
 
-  capabilities {
-    add  = ["IPC_LOCK"]
-    drop = ["ALL"]
-  }
-
   restart = "unless-stopped"
 
   healthcheck {

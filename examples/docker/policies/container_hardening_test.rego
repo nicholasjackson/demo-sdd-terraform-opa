@@ -22,7 +22,7 @@ test_deny_ssh_port_22_mapped if {
 				"image": "sha256:abc123",
 				"ports": [{"internal": 22, "external": 2222}],
 				"read_only": true,
-				"capabilities": {"drop": ["ALL"]},
+				"capabilities": [{"drop": ["ALL"]}],
 			},
 		},
 	}]}
@@ -43,7 +43,7 @@ test_allow_non_ssh_ports if {
 				"image": "sha256:abc123",
 				"ports": [{"internal": 8200, "external": 8200}],
 				"read_only": true,
-				"capabilities": {"drop": ["ALL"]},
+				"capabilities": [{"drop": ["ALL"]}],
 			},
 		},
 	}]}
@@ -64,7 +64,7 @@ test_allow_no_ports if {
 				"name": "test-container",
 				"image": "sha256:abc123",
 				"read_only": true,
-				"capabilities": {"drop": ["ALL"]},
+				"capabilities": [{"drop": ["ALL"]}],
 			},
 		},
 	}]}
@@ -87,7 +87,7 @@ test_deny_privileged_container if {
 				"image": "sha256:abc123",
 				"privileged": true,
 				"read_only": true,
-				"capabilities": {"drop": ["ALL"]},
+				"capabilities": [{"drop": ["ALL"]}],
 			},
 		},
 	}]}
@@ -108,7 +108,7 @@ test_allow_non_privileged_container if {
 				"image": "sha256:abc123",
 				"privileged": false,
 				"read_only": true,
-				"capabilities": {"drop": ["ALL"]},
+				"capabilities": [{"drop": ["ALL"]}],
 			},
 		},
 	}]}
@@ -128,7 +128,7 @@ test_allow_privileged_unset if {
 				"name": "test-container",
 				"image": "sha256:abc123",
 				"read_only": true,
-				"capabilities": {"drop": ["ALL"]},
+				"capabilities": [{"drop": ["ALL"]}],
 			},
 		},
 	}]}
@@ -150,7 +150,7 @@ test_deny_writable_root_filesystem if {
 				"name": "test-container",
 				"image": "sha256:abc123",
 				"read_only": false,
-				"capabilities": {"drop": ["ALL"]},
+				"capabilities": [{"drop": ["ALL"]}],
 			},
 		},
 	}]}
@@ -169,7 +169,7 @@ test_deny_missing_read_only if {
 			"after": {
 				"name": "test-container",
 				"image": "sha256:abc123",
-				"capabilities": {"drop": ["ALL"]},
+				"capabilities": [{"drop": ["ALL"]}],
 			},
 		},
 	}]}
@@ -189,7 +189,7 @@ test_allow_read_only_filesystem if {
 				"name": "test-container",
 				"image": "sha256:abc123",
 				"read_only": true,
-				"capabilities": {"drop": ["ALL"]},
+				"capabilities": [{"drop": ["ALL"]}],
 			},
 		},
 	}]}
@@ -220,6 +220,28 @@ test_deny_missing_capabilities if {
 	contains(msg, "drop all capabilities")
 }
 
+# Test: Container with capabilities represented as an empty list (real
+# docker_container plan shape when no capabilities block is configured) is
+# denied
+test_deny_empty_capabilities_list if {
+	result := container_hardening.deny with input as {"resource_changes": [{
+		"type": "docker_container",
+		"change": {
+			"actions": ["create"],
+			"after": {
+				"name": "test-container",
+				"image": "sha256:abc123",
+				"read_only": true,
+				"capabilities": [],
+			},
+		},
+	}]}
+
+	count(result) > 0
+	some msg in result
+	contains(msg, "drop all capabilities")
+}
+
 # Test: Container without cap_drop ALL is denied
 test_deny_missing_drop_all if {
 	result := container_hardening.deny with input as {"resource_changes": [{
@@ -230,7 +252,7 @@ test_deny_missing_drop_all if {
 				"name": "test-container",
 				"image": "sha256:abc123",
 				"read_only": true,
-				"capabilities": {"drop": ["CHOWN", "DAC_OVERRIDE"]},
+				"capabilities": [{"drop": ["CHOWN", "DAC_OVERRIDE"]}],
 			},
 		},
 	}]}
@@ -250,10 +272,10 @@ test_allow_drop_all_add_specific if {
 				"name": "test-container",
 				"image": "sha256:abc123",
 				"read_only": true,
-				"capabilities": {
+				"capabilities": [{
 					"drop": ["ALL"],
 					"add": ["IPC_LOCK"],
-				},
+				}],
 			},
 		},
 	}]}
@@ -273,7 +295,7 @@ test_allow_drop_all_no_add if {
 				"name": "test-container",
 				"image": "sha256:abc123",
 				"read_only": true,
-				"capabilities": {"drop": ["ALL"]},
+				"capabilities": [{"drop": ["ALL"]}],
 			},
 		},
 	}]}
@@ -303,7 +325,7 @@ test_deny_non_hashicorp_image if {
 					"name": "test-container",
 					"image": "sha256:abc123",
 					"read_only": true,
-					"capabilities": {"drop": ["ALL"]},
+					"capabilities": [{"drop": ["ALL"]}],
 				},
 			},
 		},
@@ -332,7 +354,7 @@ test_allow_hashicorp_image if {
 					"name": "test-container",
 					"image": "sha256:abc123",
 					"read_only": true,
-					"capabilities": {"drop": ["ALL"]},
+					"capabilities": [{"drop": ["ALL"]}],
 				},
 			},
 		},
@@ -363,7 +385,7 @@ test_deny_image_no_tag if {
 					"name": "test-container",
 					"image": "sha256:abc123",
 					"read_only": true,
-					"capabilities": {"drop": ["ALL"]},
+					"capabilities": [{"drop": ["ALL"]}],
 				},
 			},
 		},
@@ -392,7 +414,7 @@ test_deny_image_latest_tag if {
 					"name": "test-container",
 					"image": "sha256:abc123",
 					"read_only": true,
-					"capabilities": {"drop": ["ALL"]},
+					"capabilities": [{"drop": ["ALL"]}],
 				},
 			},
 		},
@@ -421,7 +443,7 @@ test_allow_explicit_version if {
 					"name": "test-container",
 					"image": "sha256:abc123",
 					"read_only": true,
-					"capabilities": {"drop": ["ALL"]},
+					"capabilities": [{"drop": ["ALL"]}],
 				},
 			},
 		},
@@ -477,10 +499,10 @@ test_allow_fully_compliant_container if {
 						"external": 8200,
 					}],
 					"read_only": true,
-					"capabilities": {
+					"capabilities": [{
 						"drop": ["ALL"],
 						"add": ["IPC_LOCK"],
-					},
+					}],
 				},
 			},
 		},

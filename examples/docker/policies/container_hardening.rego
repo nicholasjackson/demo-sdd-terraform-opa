@@ -39,6 +39,15 @@ image_name_for_container(container) := image_name if {
 	image_name := image.change.after.name
 }
 
+# Helper: Check whether a container drops all Linux capabilities.
+# The docker_container provider represents the `capabilities` block as a list
+# (zero or one items), not an object, so this must index into the list before
+# reading `drop` rather than treating `capabilities` as a map.
+container_drops_all_capabilities(container) if {
+	some capabilities in object.get(container.change.after, "capabilities", [])
+	"ALL" in object.get(capabilities, "drop", [])
+}
+
 # METADATA
 # title: Deny SSH port exposure
 # description: Blocks containers that expose port 22
@@ -97,9 +106,7 @@ deny contains msg if {
 #   severity: HIGH
 deny contains msg if {
 	some container in containers
-	capabilities := object.get(container.change.after, "capabilities", {})
-	drop := object.get(capabilities, "drop", [])
-	not "ALL" in drop
+	not container_drops_all_capabilities(container)
 
 	msg := sprintf(
 		"Container '%s' must drop all capabilities (cap_drop = [\"ALL\"])",
