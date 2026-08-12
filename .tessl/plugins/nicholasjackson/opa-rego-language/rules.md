@@ -194,6 +194,7 @@ is_admin(role) := role == "admin"
 - **No `print` or `trace` in production code**: These are debugging tools only. Regal [print-or-trace-call](https://www.openpolicyagent.org/projects/regal/rules/testing/print-or-trace-call), [dubious-print-sprintf](https://www.openpolicyagent.org/projects/regal/rules/testing/dubious-print-sprintf).
 - **No `with` outside tests**: `with` overrides are for test mocking only — not for production logic. Regal [with-outside-test-context](https://www.openpolicyagent.org/projects/regal/rules/performance/with-outside-test-context).
 - **Cover both positive and negative cases**: Test that compliant input passes AND that non-compliant input is denied. Validate exact error messages.
+- **Mock fixtures must match the real input shape, not a convenient shape**: For Terraform IaC policies, don't hand-write mock `input` JSON from memory or intuition — check real `terraform show -json` output (or the provider's schema/docs) for how a field is actually represented. HCL repeatable blocks (`foo { ... }`) serialize as a **list** of 0-or-1 objects in plan JSON, not a bare object — a mock like `"capabilities": {"drop": ["ALL"]}` will pass tests while silently not matching production input shaped `"capabilities": [{"drop": ["ALL"]}]`. When in doubt, generate one real plan and copy the actual shape into fixtures instead of guessing.
 
 ---
 
@@ -217,6 +218,7 @@ is_admin(role) := role == "admin"
 - **Don't name a rule `if`**: `if` is a keyword in OPA 1.0 — naming a rule `if` is a parse error. Regal [rule-named-if](https://www.openpolicyagent.org/projects/regal/rules/bugs/rule-named-if).
 - **Call `time.now_ns()` once**: Cache the result in a variable — calling it twice in the same rule may return different values. Regal [time-now-ns-twice](https://www.openpolicyagent.org/projects/regal/rules/bugs/time-now-ns-twice).
 - **No deprecated built-ins**: Functions removed in OPA 1.0: `any()`, `all()`, `re_match()`, `net.cidr_overlap()`, `set_diff()`, and all `cast_*()` functions. Use modern replacements (`regex.match`, `net.cidr_contains`, etc.). Regal [deprecated-builtin](https://www.openpolicyagent.org/projects/regal/rules/bugs/deprecated-builtin).
+- **Verify a field's real type before calling `object.get` on it**: `object.get(x, "key", default)` only falls back to `default` when `x` is missing the key or `x` is itself undefined — it does **not** protect against `x` being the wrong type (e.g. a list instead of an object). Terraform providers frequently represent a "block" attribute (HCL `foo { ... }`) as a **list of 0-or-1 objects** in plan JSON, not a bare object — e.g. `docker_container.capabilities` is `[]` or `[{"drop": [...]}]`, never `{}`. Calling `object.get(capabilities, "drop", [])` when `capabilities` is `[]` silently fails to match (no error, just an unsatisfied body) instead of raising a type error — the rule quietly stops firing instead of crashing, which is easy to miss in review and in tests that mock the field with the wrong shape. Before reading a nested field with `object.get`, check the field's actual shape in real `terraform show -json` output (or provider docs) — if it's a repeatable HCL block, iterate it as a list (`some item in object.get(parent, "field", [])`) rather than treating it as a map.
 
 ---
 
@@ -251,7 +253,7 @@ is_admin(role) := role == "admin"
 - **Extract helpers**: Repeated conditions become named helper rules — improves readability and enables memoization.
 - **RBAC**: Map users → roles → permissions. Check if the requested action matches assigned permissions.
 - **Set subtraction for unknown fields**: `{field | input.body[field]} - allowed_fields != set()` detects disallowed keys without iterating field by field.
-- **`object.get` for safe access with defaults**: `object.get(obj, "key", default_value)` avoids undefined when a key may be absent.
+- **`object.get` for safe access with defaults**: `object.get(obj, "key", default_value)` avoids undefined when a key may be absent — but only guards absence, not the wrong type. Confirm `obj` is actually an object (not a list) before relying on it; see Bug Avoidance.
 - **Mock with `with` in tests**: `rule with input as mock with data.x as mock_data` — never use `with` in production rules.
 
 ---
